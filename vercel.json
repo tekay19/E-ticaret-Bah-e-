@@ -1,5 +1,6 @@
 {
-  "installCommand": "npm i -g pnpm@10.12.1 && pnpm install",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
   "buildCommand": "pnpm --filter @bahce-shop/web build",
   "outputDirectory": "apps/web/dist"
 }

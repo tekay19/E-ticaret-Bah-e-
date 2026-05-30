@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "pnpm --filter @bahce-shop/api dev",
     "build": "node -e \"process.env.VERCEL === '1' ? require('child_process').execSync('pnpm build:web', {stdio: 'inherit'}) : require('child_process').execSync('pnpm -r build', {stdio: 'inherit'})\"",

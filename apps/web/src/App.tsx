@@ -17,6 +17,9 @@ import {
 } from "./api";
 import { AdminPanel } from "./AdminPanel";
 import { wpAssets } from "./assets";
+import { demoCategories, demoProductList, demoRelatedProducts, demoReviews, emptyDemoCart } from "./demoData";
+
+const brandName = "Gnbtechmachinery";
 
 type View =
   | "home"
@@ -192,6 +195,33 @@ function customerMessage(error: unknown, fallback = "İşlem tamamlanamadı.") {
     .replace("bulunamadi", "bulunamadı");
 }
 
+function addDemoCartItem(cart: Cart, product: ProductWithDetail, variantId: string | null, qty: number): Cart {
+  if (!variantId) return cart;
+  const variant = product.variants?.find((item) => item.id === variantId);
+  const existing = cart.items.find((item) => item.variantId === variantId);
+  if (existing) {
+    return {
+      ...cart,
+      items: cart.items.map((item) => item.variantId === variantId ? { ...item, qty: item.qty + qty } : item),
+    };
+  }
+  return {
+    ...cart,
+    items: [
+      ...cart.items,
+      {
+        itemId: `demo-cart-item-${variantId}`,
+        variantId,
+        qty,
+        unitPriceCents: variant?.priceCents ?? product.priceCents,
+        productName: product.name,
+        productSlug: product.slug,
+        variantSku: variant?.sku ?? product.sku,
+      },
+    ],
+  };
+}
+
 function App() {
   const [view, setView] = useState<View>(() => readViewFromHash());
   const [selectedBlogId, setSelectedBlogId] = useState(() => readBlogIdFromLocation());
@@ -253,18 +283,23 @@ function App() {
 
   async function loadCatalog(options: { q?: string; categoryId?: string | null } = {}) {
     const categoryId = options.categoryId ?? activeCategoryId;
-    const category = findCategoryRecursive(categories, categoryId);
+    const effectiveCategories = categories.length ? categories : demoCategories;
+    const category = findCategoryRecursive(effectiveCategories, categoryId);
     const params = new URLSearchParams({ limit: "48" });
     const query = options.q ?? search;
     if (query.trim()) params.set("q", query.trim());
     if (category?.slug) params.set("category", category.slug);
-    const [categoryResult, productResult] = await Promise.all([
-      api<{ data: Category[] }>("/categories"),
-      api<{ data: Product[] }>(`/products?${params.toString()}`),
-    ]);
-    setCategories(categoryResult.data);
-
-    setProducts(productResult.data.map(normalizeProduct));
+    try {
+      const [categoryResult, productResult] = await Promise.all([
+        api<{ data: Category[] }>("/categories"),
+        api<{ data: Product[] }>(`/products?${params.toString()}`),
+      ]);
+      setCategories(categoryResult.data);
+      setProducts(productResult.data.map(normalizeProduct));
+    } catch {
+      setCategories(demoCategories);
+      setProducts(demoProductList({ q: query, category: category?.slug ?? categoryId, limit: 48 }).map(normalizeProduct));
+    }
   }
 
   async function refreshStorefrontSettings() {
@@ -273,7 +308,7 @@ function App() {
   }
 
   async function refreshCart(token: string | null = session?.accessToken ?? null) {
-    const result = await api<{ data: Cart }>("/cart", { token });
+    const result = await api<{ data: Cart }>("/cart", { token }).catch(() => ({ data: cart ?? emptyDemoCart() }));
     setCart(result.data);
   }
 
@@ -296,7 +331,8 @@ function App() {
       setCart(result.data);
       setNotice(`${qty} adet ${product.name} sepete eklendi.`);
     } catch (error) {
-      setNotice(customerMessage(error, "Ürün sepete eklenemedi."));
+      setCart((current) => addDemoCartItem(current ?? emptyDemoCart(), product, variantId, qty));
+      setNotice(`${qty} adet ${product.name} sepete eklendi.`);
     }
   }
 
@@ -608,7 +644,9 @@ function Header(props: {
         setSearchOpen(true);
       } catch (caught) {
         if (caught instanceof Error && caught.name === "AbortError") return;
-        setSuggestions([]);
+        const category = findCategoryRecursive(props.categories.length ? props.categories : demoCategories, props.activeCategoryId);
+        setSuggestions(demoProductList({ q: query, category: category?.slug ?? props.activeCategoryId, limit: 20 }).map(normalizeProduct));
+        setSearchOpen(true);
       } finally {
         if (!controller.signal.aborted) setSearching(false);
       }
@@ -685,7 +723,7 @@ function Header(props: {
       </div>
       <div className="main-header">
         <button className="brand" onClick={() => props.setView("home")}>
-          <img src={wpAssets.logo} alt="Toolband" />
+          <img src={wpAssets.logo} alt={brandName} />
         </button>
         <div className="search-box">
           <select aria-label="Kategori" value={props.activeCategoryId ?? ""} onChange={(event) => chooseCategory(event.target.value)}>
@@ -1331,7 +1369,7 @@ function AccountPage(props: {
     const compareProducts = props.compareList.map((item) => props.products.find((product) => product.id === item.productId)).filter(Boolean) as ProductWithDetail[];
     return (
       <CustomerPortalShell currentTab="account" session={props.session} setView={props.setView} saveSession={props.saveSession}>
-        <div className="account-intro"><span>Hesabım</span><h2>Genel Bakış</h2><p>Bahçe Shop müşteri paneline hoş geldiniz. Siparişlerinizi, iadelerinizi ve listelerinizi tek ekrandan yönetin.</p></div>
+        <div className="account-intro"><span>Hesabım</span><h2>Genel Bakış</h2><p>Gnbtechmachinery müşteri paneline hoş geldiniz. Siparişlerinizi, iadelerinizi ve listelerinizi tek ekrandan yönetin.</p></div>
         <div className="account-summary-grid" style={{ marginBottom: "25px" }}>
           <article><span>Siparişler</span><strong>Süreçleri Takip Et</strong><button onClick={() => props.setView("orders")}>Aç</button></article>
           <article><span>İadeler</span><strong>Kolay İade Talebi</strong><button onClick={() => props.setView("returns")}>Aç</button></article>
@@ -1350,7 +1388,7 @@ function AccountPage(props: {
         <div className="saas-auth-brand-inner">
           <div className="saas-auth-logo">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="10" fill="#fff" fillOpacity=".15"/><path d="M10 18h6l3-8 4 16 3-8h6" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span>Bahçe Shop</span>
+            <span>{brandName}</span>
           </div>
           <h2 className="saas-auth-headline">Profesyonel E-Ticaret<br/>Altyapısına<br/><em>Hoş Geldiniz</em></h2>
           <p className="saas-auth-tagline">Siparişlerinizi takip edin, iade süreçlerinizi yönetin ve özel fırsatlardan yararlanın — hepsi tek platformda.</p>
@@ -1360,7 +1398,7 @@ function AccountPage(props: {
             <div className="saas-trust-badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>7/24 Destek</span></div>
           </div>
           <blockquote className="saas-auth-testimonial">
-            <p>"Bahçe Shop sayesinde sipariş ve iade süreçlerimizi tek panelden yönetiyoruz. Gerçekten profesyonel bir altyapı."</p>
+            <p>"Gnbtechmachinery sayesinde sipariş ve iade süreçlerimizi tek panelden yönetiyoruz. Gerçekten profesyonel bir altyapı."</p>
             <footer>— Ahmet Y., Kurumsal Müşteri</footer>
           </blockquote>
           <div className="saas-auth-stats">
@@ -1518,7 +1556,7 @@ function ForgotPasswordPage({ setView, setNotice }: { setView: (view: View) => v
         <div className="saas-auth-brand-inner">
           <div className="saas-auth-logo">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="10" fill="#fff" fillOpacity=".15"/><path d="M10 18h6l3-8 4 16 3-8h6" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span>Bahçe Shop</span>
+            <span>{brandName}</span>
           </div>
           <h2 className="saas-auth-headline">Şifrenizi<br/>Güvenle<br/><em>Yenileyin</em></h2>
           <p className="saas-auth-tagline">E-posta adresinize güvenli bir yenileme linki göndereceğiz. Hesabınız her zaman koruma altında.</p>
@@ -1604,7 +1642,7 @@ function ResetPasswordPage({ setView, setNotice }: { setView: (view: View) => vo
         <div className="saas-auth-brand-inner">
           <div className="saas-auth-logo">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="10" fill="#fff" fillOpacity=".15"/><path d="M10 18h6l3-8 4 16 3-8h6" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span>Bahçe Shop</span>
+            <span>{brandName}</span>
           </div>
           <h2 className="saas-auth-headline">Yeni Şifrenizi<br/>Güvenle<br/><em>Belirleyin</em></h2>
           <p className="saas-auth-tagline">Yeni şifreniz en az 8 karakter olmalı. İşlemden sonra eski oturumlarınız otomatik kapatılır.</p>
@@ -2069,11 +2107,11 @@ function AuthRequired({ title, setView }: { title: string; setView: (view: View)
 function AboutPage() {
   return (
     <section className="content-page">
-      <PageHero title="Hakkımızda" subtitle="Toolband tasarım dilinde Bahçe Shop hikayesi." />
+      <PageHero title="Hakkımızda" subtitle="Gnbtechmachinery vitrin ve operasyon hikayesi." />
       <div className="split-content">
         <div>
           <h2>Kaliteli ürünler, gerçek e-ticaret altyapısı.</h2>
-          <p>Bu vitrin, WordPress demosundaki endüstriyel araç mağazası hissini mevcut Bahçe Shop backendine bağlar. Katalog, sepet, kupon, kargo, sipariş ve iade akışları API üzerinden çalışır.</p>
+          <p>Bu vitrin, WordPress demosundaki endüstriyel araç mağazası hissini Gnbtechmachinery backendine bağlar. Katalog, sepet, kupon, kargo, sipariş ve iade akışları API üzerinden çalışır.</p>
           <p>Amacımız hızlı, güvenilir ve mobilde de rahat kullanılan bir e-ticaret deneyimi sunmak.</p>
         </div>
         <img src={wpAssets.cms1} alt="Workshop" />
@@ -2258,13 +2296,20 @@ function ProductPage({
   }, [product.slug]);
 
   async function loadProductExtras() {
-    const [relatedResult, reviewResult] = await Promise.all([
-      api<{ data: Product[] }>(`/products/${product.slug}/related?limit=4`),
-      api<{ data: ProductReview[]; meta: { averageRating: number; total: number } }>(`/products/${product.slug}/reviews`),
-    ]);
-    setRelated(relatedResult.data.map(normalizeProduct));
-    setReviews(reviewResult.data);
-    setReviewMeta(reviewResult.meta);
+    try {
+      const [relatedResult, reviewResult] = await Promise.all([
+        api<{ data: Product[] }>(`/products/${product.slug}/related?limit=4`),
+        api<{ data: ProductReview[]; meta: { averageRating: number; total: number } }>(`/products/${product.slug}/reviews`),
+      ]);
+      setRelated(relatedResult.data.map(normalizeProduct));
+      setReviews(reviewResult.data);
+      setReviewMeta(reviewResult.meta);
+    } catch {
+      const reviewResult = demoReviews(product.id);
+      setRelated(demoRelatedProducts(product, 4).map(normalizeProduct));
+      setReviews(reviewResult.data);
+      setReviewMeta(reviewResult.meta);
+    }
   }
 
   async function submitReview() {
@@ -2532,7 +2577,7 @@ function Footer({ setView, settings }: { setView: (view: View) => void; settings
         <div><h3>Kurumsal</h3><button onClick={() => setView("orders")}>Teslimat</button><button onClick={() => setView("privacy")}>Yasal Bilgilendirme</button><button onClick={() => setView("privacy")}>Kullanım Koşulları</button><button onClick={() => setView("about")}>Hakkımızda</button></div>
         <div><h3>İletişim</h3><p>{settings.contactInfo.address}</p><p>{settings.contactInfo.phone}</p><p>{settings.contactInfo.email}</p><button onClick={() => setView("contact")}>İletişim Formu</button></div>
       </section>
-      <div className="copyright">© 2026 Toolband Demo - Bahçe Shop vitrini</div>
+      <div className="copyright">© 2026 Gnbtechmachinery vitrini</div>
     </footer>
   );
 }

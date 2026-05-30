@@ -177,7 +177,7 @@ export type StorefrontSettings = {
 };
 
 export const defaultStorefrontSettings: StorefrontSettings = {
-  promoText: "İlk siparişe özel %25’e varan fırsat: GET25OFF - HEMEN ALIŞVERİŞE BAŞLA",
+  promoText: "Gnbtechmachinery vitrini açıldı: endüstriyel ekipmanlarda özel fırsatlar",
   phoneLabel: "Hemen Ara:",
   phoneNumber: "9876-543-210",
   dailyDealLabel: "Günün Fırsatları",
@@ -246,7 +246,7 @@ export const defaultStorefrontSettings: StorefrontSettings = {
   contactInfo: {
     address: "Kadıköy, İstanbul",
     phone: "0216 000 00 00",
-    email: "destek@bahceshop.com",
+    email: "destek@gnbtechmachinery.com",
     mapLabel: "Mağaza Konumu",
   },
   blogPosts: [

@@ -1,0 +1,5 @@
+{
+  "installCommand": "npm i -g pnpm@10.12.1 && pnpm install",
+  "buildCommand": "pnpm --filter @bahce-shop/web build",
+  "outputDirectory": "apps/web/dist"
+}

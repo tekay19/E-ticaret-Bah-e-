@@ -1,4 +1,4 @@
-import React, { useEffect, useState, type FormEvent } from "react";
+import React, { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
 import {
   api,
   defaultStorefrontSettings,
@@ -15,11 +15,11 @@ import {
   type ShippingOption,
   type StorefrontSettings,
 } from "./api";
-import { AdminPanel } from "./AdminPanel";
 import { wpAssets } from "./assets";
 import { demoCategories, demoProductList, demoRelatedProducts, demoReviews, emptyDemoCart } from "./demoData";
 
 const brandName = "Gnbtechmachinery";
+const AdminPanel = lazy(() => import("./AdminPanel").then((module) => ({ default: module.AdminPanel })));
 
 type View =
   | "home"
@@ -405,14 +405,16 @@ function App() {
     return (
       <div className="site-shell">
         {notice && <div className="toast" onAnimationEnd={() => setNotice(null)}>{notice}</div>}
-        <AdminPanel
-          session={session}
-          saveSession={saveSession}
-          setNotice={setNotice}
-          goStorefront={() => navigate("home")}
-          onCatalogChanged={() => loadCatalog({ q: "", categoryId: null })}
-          onStorefrontChanged={refreshStorefrontSettings}
-        />
+        <Suspense fallback={<div className="admin-loading-container"><p>Yükleniyor...</p></div>}>
+          <AdminPanel
+            session={session}
+            saveSession={saveSession}
+            setNotice={setNotice}
+            goStorefront={() => navigate("home")}
+            onCatalogChanged={() => loadCatalog({ q: "", categoryId: null })}
+            onStorefrontChanged={refreshStorefrontSettings}
+          />
+        </Suspense>
       </div>
     );
   }
@@ -753,7 +755,7 @@ function Header(props: {
               )}
               {suggestions.map((product) => (
                 <button className="search-suggestion-item" key={product.id} onClick={() => selectSuggestion(product)}>
-                  <img src={productImageUrl(product)} alt={product.name} />
+                  <img src={productImageUrl(product)} alt={product.name} loading="lazy" decoding="async" />
                   <span>
                     <b>{product.name}</b>
                     <small>{product.sku} · {formatTry(product.priceCents)}</small>
@@ -808,7 +810,8 @@ function HomePage(props: {
   return (
     <>
       <section className="hero">
-        <article style={{ backgroundImage: `url(${wpAssets.hero1})` }}>
+        <article>
+          <img className="hero-bg-img" src={wpAssets.hero1} alt="" fetchPriority="high" decoding="async" />
           <div>
             <p>Acele et! %25’e varan indirim</p>
             <h1>Profesyonel El Aleti Seti</h1>
@@ -816,7 +819,8 @@ function HomePage(props: {
             <button onClick={() => props.setView("shop")}>Alışverişe Başla</button>
           </div>
         </article>
-        <article style={{ backgroundImage: `url(${wpAssets.hero2})` }}>
+        <article>
+          <img className="hero-bg-img" src={wpAssets.hero2} alt="" loading="lazy" decoding="async" />
           <div>
             <p>Acele et! %30’a varan indirim</p>
             <h1>Bahçe ve Tamir Ürünleri</h1>
@@ -830,7 +834,7 @@ function HomePage(props: {
       <section className="category-wheel">
         {(props.categories.length ? props.categories : props.settings.fallbackCategories.map((cat) => ({ id: cat.id, name: cat.name, slug: cat.slug, children: [] }))).map((category, index) => (
           <button key={category.id} onClick={() => { props.setActiveCategoryId(category.id); props.setView("shop"); }}>
-            <img src={categoryImage(category, index)} alt="" onError={(event) => handleCategoryImageError(event, index)} />
+            <img src={categoryImage(category, index)} alt="" loading="lazy" decoding="async" onError={(event) => handleCategoryImageError(event, index)} />
             <b>{category.name}</b>
             <small>{getCategoryProductCount(category, props.products)} ürün</small>
           </button>
@@ -872,7 +876,7 @@ function HomePage(props: {
 
       <Testimonials />
       <BlogPreview settings={props.settings} openBlog={props.openBlog} />
-      <section className="brand-strip">{wpAssets.brands.map((brand) => <button onClick={() => props.setView("shop")} key={brand}><img src={brand} alt="Marka" /></button>)}</section>
+      <section className="brand-strip">{wpAssets.brands.map((brand) => <button onClick={() => props.setView("shop")} key={brand}><img src={brand} alt="Marka" loading="lazy" decoding="async" /></button>)}</section>
     </>
   );
 }
@@ -1247,7 +1251,7 @@ function CustomerCompareMatrix(props: {
                     >
                       ✕
                     </button>
-                    {productImageUrl(product) ? <img src={productImageUrl(product)} alt={product.name} /> : <div style={{ height: "100px", width: "100px", background: "var(--soft)" }} />}
+                    {productImageUrl(product) ? <img src={productImageUrl(product)} alt={product.name} loading="lazy" decoding="async" /> : <div style={{ height: "100px", width: "100px", background: "var(--soft)" }} />}
                     <h4>{product.name}</h4>
                     <strong>{formatTry(product.priceCents ?? 0)}</strong>
                     <button className="primary" onClick={() => void props.addToCart(product)} style={{ width: "100%", padding: "8px 12px", fontSize: "12px", marginTop: "5px" }}>
@@ -1708,7 +1712,7 @@ function CustomerProductList(props: {
       <div className="account-product-grid">
         {props.products.map((product) => (
           <article key={product.id}>
-            <img src={productImageUrl(product)} alt={product.name} />
+            <img src={productImageUrl(product)} alt={product.name} loading="lazy" decoding="async" />
             <div><b>{product.name}</b><span>{formatTry(product.priceCents ?? 0)}</span></div>
             <button className="primary" onClick={() => void props.addToCart(product)}>Sepete Ekle</button>
             <button onClick={() => void props.toggleCustomerItem(props.kind, product)}>Listeden çıkar</button>
@@ -2114,7 +2118,7 @@ function AboutPage() {
           <p>Bu vitrin, WordPress demosundaki endüstriyel araç mağazası hissini Gnbtechmachinery backendine bağlar. Katalog, sepet, kupon, kargo, sipariş ve iade akışları API üzerinden çalışır.</p>
           <p>Amacımız hızlı, güvenilir ve mobilde de rahat kullanılan bir e-ticaret deneyimi sunmak.</p>
         </div>
-        <img src={wpAssets.cms1} alt="Workshop" />
+        <img src={wpAssets.cms1} alt="Workshop" loading="lazy" decoding="async" />
       </div>
       <section className="service-row inline-services">
         {["Hızlı Teslimat|Entegre kargo akışı", "Güvenli Ödeme|Test Iyzico akışı hazır", "Kolay İade|14 günlük iade süreci", "Yönetim Raporları|Gerçek backend metrikleri"].map((item) => {
@@ -2159,7 +2163,7 @@ function BlogPage({
           <strong>{selectedPost.title}</strong>
         </nav>
         <div className="blog-detail-page">
-          <img src={selectedPost.imageUrl} alt={selectedPost.title} />
+          <img src={selectedPost.imageUrl} alt={selectedPost.title} loading="lazy" decoding="async" />
           <div className="blog-detail-copy">
             <span>{selectedPost.date} • {selectedPost.author}</span>
             <h1>{selectedPost.title}</h1>
@@ -2184,7 +2188,7 @@ function BlogPage({
       <div className="blog-archive">
         {posts.map((post, index) => (
           <article key={post.id}>
-            <img src={post.imageUrl || wpAssets.productImages[index % wpAssets.productImages.length]} alt={post.title} />
+            <img src={post.imageUrl || wpAssets.productImages[index % wpAssets.productImages.length]} alt={post.title} loading="lazy" decoding="async" />
             <span>{post.date} - {post.author}</span>
             <h3>{post.title}</h3>
             <p>{post.excerpt}</p>
@@ -2343,8 +2347,8 @@ function ProductPage({
       <div className="product-detail-page">
         <div className="product-gallery">
           <span className="sale-tag product-sale">Öne Çıkan</span>
-          <img src={productImageUrl(product)} alt={product.name} />
-          <div>{(product.images?.length ? product.images : [product.primaryImage].filter(Boolean)).slice(0, 4).map((image, index) => <img src={productImageUrl(product, index)} alt={image?.altText ?? product.name} key={image?.id ?? index} />)}</div>
+          <img src={productImageUrl(product)} alt={product.name} decoding="async" />
+          <div>{(product.images?.length ? product.images : [product.primaryImage].filter(Boolean)).slice(0, 4).map((image, index) => <img src={productImageUrl(product, index)} alt={image?.altText ?? product.name} loading="lazy" decoding="async" key={image?.id ?? index} />)}</div>
         </div>
         <div className="product-summary">
           <button className="link-button" onClick={() => setView("shop")}>← Mağazaya dön</button>
@@ -2487,7 +2491,7 @@ function ProductGrid(props: {
       {props.products.map((product, index) => (
         <article className="product-card" key={product.id}>
           {index % 3 === 0 && <span className="sale-tag">-{3 + index}%</span>}
-          <button className="image-button" onClick={() => props.selectProduct(product)}><img src={productImageUrl(product, index)} alt={product.name} /></button>
+          <button className="image-button" onClick={() => props.selectProduct(product)}><img src={productImageUrl(product, index)} alt={product.name} loading={index < 4 ? "eager" : "lazy"} decoding="async" /></button>
           <div className="quick-actions">
             <button onClick={() => void props.toggleCustomerItem("wishlist", product)}>{props.wishlistIds.includes(product.id) ? "Favoride" : "Favori"}</button>
             <button onClick={() => void props.toggleCustomerItem("compare", product)}>{props.compareIds.includes(product.id) ? "Karşılaştırmada" : "Karşılaştır"}</button>
@@ -2508,7 +2512,7 @@ function ProductList({ products, selectProduct }: { products: ProductWithDetail[
     <div className="deal-list">
       {products.map((product) => (
         <button key={product.id} onClick={() => selectProduct(product)}>
-          <img src={productImageUrl(product)} alt="" />
+          <img src={productImageUrl(product)} alt="" loading="lazy" decoding="async" />
           <div><b>{product.name}</b><span>{formatTry(product.priceCents)}</span></div>
         </button>
       ))}
@@ -2521,7 +2525,7 @@ function ProductModal({ product, onClose, addToCart }: { product: ProductWithDet
     <div className="modal-backdrop" onClick={onClose}>
       <article className="product-modal" onClick={(event) => event.stopPropagation()}>
         <button className="close" onClick={onClose}>×</button>
-        <img src={productImageUrl(product)} alt={product.name} />
+        <img src={productImageUrl(product)} alt={product.name} loading="lazy" decoding="async" />
         <div>
           <h2>{product.name}</h2>
           <div className="stars">★★★★★</div>

@@ -509,8 +509,8 @@ export function AdminPanel({
     <section className="admin-shell">
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <span>BO</span>
-          <strong>Bahçe Ops</strong>
+          <span>GM</span>
+          <strong>Gnbtechmachinery</strong>
           <small>Operasyon merkezi</small>
         </div>
         {sections.map((item) => {

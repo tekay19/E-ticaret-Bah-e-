@@ -723,7 +723,7 @@ function Header(props: {
       </div>
       <div className="main-header">
         <button className="brand" onClick={() => props.setView("home")}>
-          <img src={wpAssets.logo} alt={brandName} />
+          <span>{brandName}</span>
         </button>
         <div className="search-box">
           <select aria-label="Kategori" value={props.activeCategoryId ?? ""} onChange={(event) => chooseCategory(event.target.value)}>

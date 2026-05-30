@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "pnpm --filter @bahce-shop/api dev",
     "build": "pnpm -r build",
+    "build:web": "pnpm --filter @bahce-shop/web build",
     "typecheck": "pnpm -r typecheck",
     "db:migrate:up": "pnpm --filter @bahce-shop/db migrate:up",
     "db:migrate:down": "pnpm --filter @bahce-shop/db migrate:down",

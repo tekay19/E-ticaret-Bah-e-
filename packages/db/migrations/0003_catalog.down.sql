@@ -1,0 +1,16 @@
+DROP TRIGGER IF EXISTS products_search_update ON products;
+DROP FUNCTION IF EXISTS products_search_trigger();
+DROP INDEX IF EXISTS idx_product_images_product;
+DROP TABLE IF EXISTS product_images;
+DROP INDEX IF EXISTS idx_product_variants_product;
+DROP TABLE IF EXISTS product_variants;
+DROP INDEX IF EXISTS idx_products_brand;
+DROP INDEX IF EXISTS idx_products_category;
+DROP INDEX IF EXISTS idx_products_search;
+DROP TABLE IF EXISTS products;
+DROP TRIGGER IF EXISTS categories_closure_insert ON categories;
+DROP FUNCTION IF EXISTS update_category_closure();
+DROP INDEX IF EXISTS idx_closure_descendant;
+DROP TABLE IF EXISTS category_closure;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS brands;

@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS password_reset_tokens;
+DROP TABLE IF EXISTS email_verification_tokens;
+DROP INDEX IF EXISTS idx_refresh_tokens_user_id;
+DROP INDEX IF EXISTS idx_refresh_tokens_family;
+DROP TABLE IF EXISTS refresh_tokens;
+ALTER TABLE customers DROP CONSTRAINT IF EXISTS customers_default_address_fkey;
+DROP TABLE IF EXISTS addresses;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS users;
+DROP EXTENSION IF EXISTS citext;

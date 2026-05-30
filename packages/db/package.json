@@ -1,0 +1,22 @@
+{
+  "name": "@bahce-shop/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "migrate:up": "node-pg-migrate --use-glob -m './migrations/*.up.sql' up",
+    "migrate:down": "node-pg-migrate --use-glob -m './migrations/*.down.sql' down",
+    "migrate:create": "node-pg-migrate --migration-file-language sql -m ./migrations create",
+    "seed:catalog": "tsx src/seed/catalog.seed.ts"
+  },
+  "dependencies": {
+    "@bahce-shop/shared": "workspace:*",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "node-pg-migrate": "^8.0.3"
+  }
+}

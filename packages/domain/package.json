@@ -1,0 +1,22 @@
+{
+  "name": "@bahce-shop/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "create-admin": "tsx src/scripts/create-admin.ts"
+  },
+  "dependencies": {
+    "@bahce-shop/db": "workspace:*",
+    "@bahce-shop/integrations": "workspace:*",
+    "@bahce-shop/repositories": "workspace:*",
+    "@bahce-shop/shared": "workspace:*",
+    "@bahce-shop/workers": "workspace:*",
+    "argon2": "^0.44.0",
+    "jose": "^6.1.0",
+    "zod": "^3.24.1"
+  }
+}

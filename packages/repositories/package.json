@@ -1,0 +1,16 @@
+{
+  "name": "@bahce-shop/repositories",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@bahce-shop/db": "workspace:*",
+    "@bahce-shop/shared": "workspace:*",
+    "pg": "^8.13.1"
+  }
+}

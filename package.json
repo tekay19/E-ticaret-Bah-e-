@@ -1,0 +1,23 @@
+{
+  "name": "bahce-shop",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.12.1",
+  "scripts": {
+    "dev": "pnpm --filter @bahce-shop/api dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "db:migrate:up": "pnpm --filter @bahce-shop/db migrate:up",
+    "db:migrate:down": "pnpm --filter @bahce-shop/db migrate:down",
+    "db:migrate:create": "pnpm --filter @bahce-shop/db migrate:create",
+    "db:seed:catalog": "pnpm --filter @bahce-shop/db seed:catalog",
+    "script:create-admin": "pnpm --filter @bahce-shop/domain create-admin"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/nodemailer": "^7.0.2",
+    "@types/pg": "^8.15.6",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

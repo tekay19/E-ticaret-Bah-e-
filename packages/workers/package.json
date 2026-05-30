@@ -1,0 +1,21 @@
+{
+  "name": "@bahce-shop/workers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@bahce-shop/integrations": "workspace:*",
+    "@bahce-shop/repositories": "workspace:*",
+    "@bahce-shop/shared": "workspace:*",
+    "bullmq": "^5.34.10",
+    "handlebars": "^4.7.8",
+    "ioredis": "^5.4.2",
+    "nodemailer": "^7.0.3",
+    "sharp": "^0.34.5"
+  }
+}

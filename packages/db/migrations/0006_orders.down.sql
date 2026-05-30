@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS webhook_events;
+DROP TABLE IF EXISTS idempotency_keys;
+DROP INDEX IF EXISTS idx_payments_order;
+DROP TABLE IF EXISTS payments;
+DROP INDEX IF EXISTS idx_order_status_history_order;
+DROP TABLE IF EXISTS order_status_history;
+DROP INDEX IF EXISTS idx_order_items_order;
+DROP TABLE IF EXISTS order_items;
+DROP INDEX IF EXISTS idx_orders_status;
+DROP INDEX IF EXISTS idx_orders_customer;
+DROP TABLE IF EXISTS orders;
+DROP SEQUENCE IF EXISTS order_number_seq;
